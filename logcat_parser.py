@@ -33,7 +33,7 @@ def parse_file(f, out_dir):
         end_chunk = chunks[1]
         # Handle buffer/chunks
         skip = 29 + len(str(current_chunk)) + len(str(end_chunk))
-        buffer += line[index + skip:]
+        buffer += line[index + skip:].rstrip("\n")
         if (current_chunk == end_chunk):
           line = buffer
           buffer = ''
