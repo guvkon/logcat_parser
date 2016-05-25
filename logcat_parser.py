@@ -1,6 +1,7 @@
 import sys
 import os
 import re
+import json
 
 def parse_file(f, out_dir):
   """Parse logcat file and put separate JSON requests/responses into separate files."""
@@ -10,11 +11,14 @@ def parse_file(f, out_dir):
   for line in f:
     # Init write_flag and method_name
     write_flag = False
-    index = line.find("method")
-    if (index > -1):
-      method_name = re.search('"method":"(.+?)"', line)
-      method_name = method_name.groups()[0]
-    
+    try:
+      method_search = re.search('"method":"(.+?)"', line)
+      method_search.groups()[0]
+    except Exception:
+      True
+    else:
+      method_name = method_search.groups()[0]
+
     # Extract JSON from the line.
     index = line.find("Sent to server")
     if (index > -1):
@@ -38,11 +42,13 @@ def parse_file(f, out_dir):
           line = buffer
           buffer = ''
           write_flag = True
-    
+
     # Write to file if allowed.
     if (write_flag):
       file_path = out_dir + "/" + str(count) + "-" + method_name + ".json"
       out_file = open(file_path, 'w')
+      line = json.loads(line)
+      line = json.dumps(line, sort_keys=True, indent=2, separators=(',', ': '))
       out_file.write(line)
       count += 1
   return
